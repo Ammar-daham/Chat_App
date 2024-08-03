@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server implements Runnable
 {
@@ -14,6 +16,7 @@ public class Server implements Runnable
 	private ArrayList<ConnectionHandler> connections;
 	private ServerSocket server;
 	private boolean done;
+	private ExecutorService pool;
 	
 	public Server()
 	{
@@ -26,17 +29,19 @@ public class Server implements Runnable
 	{
 		try
 		{
+			server = new ServerSocket(9999);
+			pool = Executors.newCachedThreadPool();
 			while (!done)
 			{
-				server = new ServerSocket(9999);
 				Socket client = server.accept();
 				ConnectionHandler handler = new ConnectionHandler(client);
 				connections.add(handler);
+				pool.execute(handler);
 			}
 		}
 		catch (IOException e)
 		{
-			// TODO: handle
+			shutdown();
 		}
 	}
 	
@@ -115,7 +120,8 @@ public class Server implements Runnable
 					}
 					else if (message.startsWith("/quit"))
 					{
-						// TODO: quit
+						broadcast(nickname + " left the chat!");
+						shutdown();
 					}
 					else
 					{
