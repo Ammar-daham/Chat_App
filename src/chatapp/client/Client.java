@@ -71,6 +71,7 @@ public class Client implements Runnable
 					String message = inReeder.readLine();
 					if (message.equals("/quit"))
 					{
+						out.println(message);
 						inReeder.close();
 						shutdown();
 					}
